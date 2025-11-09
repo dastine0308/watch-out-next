@@ -4,7 +4,7 @@ import React from "react";
 import { Card, CardHeader, CardContent, CardTitle } from "@/components/ui/card";
 import { AlertTriangleIcon, BellIcon, CheckIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Alert, sampleAlerts } from "@/components/alerts-table";
+import { Alert } from "@/components/alerts-table";
 
 type Stat = {
   id: string;
@@ -52,21 +52,24 @@ export const defaultStats: Stat[] = [
   {
     id: "total",
     title: "Total Alerts",
-    value: sampleAlerts.length,
+    // value: sampleAlerts.length,
+    value: 0,
     icon: <BellIcon className="h-4 w-4" />,
     variant: "default",
   },
   {
     id: "unhandled",
     title: "Unhandled",
-    value: sampleAlerts.filter((a: Alert) => a.status === "unhandled").length,
+    // value: sampleAlerts.filter((a: Alert) => a.status === "unhandled").length,
+    value: 0,
     icon: <AlertTriangleIcon className="h-4 w-4" />,
     variant: "warning",
   },
   {
     id: "resolved",
     title: "Resolved",
-    value: sampleAlerts.filter((a: Alert) => a.status === "resolved").length,
+    // value: sampleAlerts.filter((a: Alert) => a.status === "resolved").length,
+    value: 0,
     icon: <CheckIcon className="h-4 w-4" />,
     variant: "default",
   },

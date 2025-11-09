@@ -2,16 +2,13 @@ import { LoginForm } from "@/components/auth/login-form";
 
 const features = [
   {
-    title: "End-to-End Encryption",
-    description: "All data encrypted with your private key",
+    title: "Fully Visio AI Monitoring",
   },
   {
-    title: "Zero-Knowledge Verification",
-    description: "Prove identity without revealing secrets",
+    title: "Check Remotely In Real-Time",
   },
   {
-    title: "Family Certificate Support",
-    description: "Multi-level security with shared certificates",
+    title: "Privacy - No Facial Recording",
   },
 ];
 
@@ -25,16 +22,16 @@ export default function LoginPage() {
           <div className="max-w-[600px] flex-1 space-y-8">
             {/* Logo */}
             <div className="flex items-center gap-4">
-              <h1 className="text-3xl font-bold text-gray-900">Watch Out!</h1>
+              <h1 className="text-3xl font-bold text-gray-900">WatchOut</h1>
             </div>
 
             {/* Main Heading */}
             <div className="space-y-4">
               <h2 className="text-4xl font-bold leading-[1.2] text-gray-900">
-                Monitor all alerts in one place
+                All Fall Detection. Instant Alerts. Total Peace of Mind.
               </h2>
               <p className="max-w-[516px] text-lg leading-relaxed text-gray-600">
-                Monitor all alerts in one place
+                Protect the ones you care about.
               </p>
             </div>
 
@@ -49,9 +46,9 @@ export default function LoginPage() {
                     <h3 className="mb-1 text-sm font-bold text-gray-900">
                       {feature.title}
                     </h3>
-                    <p className="text-sm text-gray-600">
+                    {/* <p className="text-sm text-gray-600">
                       {feature.description}
-                    </p>
+                    </p> */}
                   </div>
                 </div>
               ))}
@@ -74,14 +71,14 @@ export default function LoginPage() {
           {/* Logo & Branding */}
           <div className="space-y-4 text-center">
             <div className="flex items-center justify-center gap-3">
-              <h1 className="text-2xl font-bold text-gray-900">Watch Out!</h1>
+              <h1 className="text-2xl font-bold text-gray-900">WatchOut</h1>
             </div>
             <div className="space-y-2">
               <h2 className="text-xl font-bold text-gray-900">
-                Monitor all alerts in one place
+                All Fall Detection. Instant Alerts. Total Peace of Mind.
               </h2>
               <p className="text-sm text-gray-600">
-                Monitor all alerts in one place
+                Protect the ones you care about.
               </p>
             </div>
           </div>
@@ -89,12 +86,7 @@ export default function LoginPage() {
           {/* Login Form Card */}
           <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-xl">
             <div className="mb-5 border-b border-gray-200 pb-4">
-              <h3 className="mb-1 text-xl font-bold text-gray-900">
-                Monitor all alerts in one place
-              </h3>
-              <p className="text-xs text-gray-500">
-                Monitor all alerts in one place
-              </p>
+              <h3 className="mb-1 text-xl font-bold text-gray-900">Login</h3>
             </div>
             <LoginForm />
           </div>
@@ -110,7 +102,7 @@ export default function LoginPage() {
                   <h3 className="mb-0.5 text-xs font-bold text-gray-900">
                     {feature.title}
                   </h3>
-                  <p className="text-xs text-gray-600">{feature.description}</p>
+                  {/* <p className="text-xs text-gray-600">{feature.description}</p> */}
                 </div>
               </div>
             ))}

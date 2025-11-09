@@ -1,23 +1,33 @@
 import { Suspense } from "react";
 import Header from "@/components/header";
 import Hero from "@/components/hero";
-import { getDevicesList } from "@/lib/server-api";
+import { getAlertsList, getDevicesList } from "@/lib/server-api";
 import HomeClient from "@/components/home-client";
-import { sampleDevices } from "@/components/fall-detect-devices";
-import { useUserStore } from "@/store/user-store";
+import { FallDetectDevice } from "@/components/fall-detect-devices";
+import { Alert } from "@/components/alerts-table";
 
 async function DevicesContent() {
-  const userId = useUserStore.getState().user?.id || "";
   try {
-    // Fetch devices (with or without user_id)
-    const devices = await getDevicesList(userId);
-    return (
-      <HomeClient devices={devices.length > 0 ? devices : sampleDevices} />
-    );
+    const alerts = await getAlertsList();
+    const formattedAlerts =
+      alerts.length > 0
+        ? alerts.map((alert: Alert) => ({
+            id: alert.id,
+            title: alert.title,
+            status: alert.status,
+            description: alert.description,
+            timeAgo: alert.timeAgo,
+            location: alert.location,
+          }))
+        : [];
+    console.log("formattedAlerts", formattedAlerts);
+
+    const devices = await getDevicesList();
+    const formattedDevices =
+      devices.length > 0 ? (devices as FallDetectDevice[]) : [];
+    return <HomeClient devices={formattedDevices} alerts={formattedAlerts} />;
   } catch (error) {
-    console.error("Error loading data:", error);
-    // Fallback to sample devices on error
-    return <HomeClient devices={sampleDevices} />;
+    return <HomeClient devices={[]} alerts={[]} />;
   }
 }
 
@@ -28,8 +38,8 @@ export default async function Home() {
 
       <main className="py-6 sm:py-8">
         <Hero
-          title="Watch Out! Stick Man!"
-          subtitle="Monitor all alerts in one place"
+          title="WatchOut"
+          subtitle="All Fall Detection. Instant Alerts. Total Peace of Mind."
         />
 
         <Suspense

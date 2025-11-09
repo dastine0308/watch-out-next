@@ -148,22 +148,3 @@ export default function AlertsTable({
     </div>
   );
 }
-
-export const sampleAlerts: Alert[] = [
-  {
-    id: "1",
-    title: "Fall Detected",
-    status: "unhandled",
-    description: "Fall detected in the living room",
-    timeAgo: "2 minutes ago",
-    location: "Living Room",
-  },
-  {
-    id: "2",
-    title: "Fall Detected",
-    status: "resolved",
-    description: "Fall detected in the bathroom",
-    timeAgo: "2 minutes ago",
-    location: "Bathroom",
-  },
-];

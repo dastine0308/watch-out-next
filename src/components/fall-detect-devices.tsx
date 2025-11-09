@@ -14,14 +14,17 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Plus, Pencil } from "lucide-react";
+import { useUserStore } from "@/store/user-store";
+import { useDeviceStore } from "@/store/device-store";
 
 export type FallDetectDevice = {
-  id: string;
-  name: string;
+  _id: string;
+  uid: string;
+  status: string;
+  registered_at: string;
   location: string;
-  status: "online" | "offline" | "warning";
-  lastActivity: string;
-  alertsCount: number;
+  last_seen: string;
+  device_name: string;
 };
 
 type FallDetectDevicesProps = {
@@ -29,10 +32,12 @@ type FallDetectDevicesProps = {
 };
 
 export default function FallDetectDevices({ devices }: FallDetectDevicesProps) {
+  const user = useUserStore((state) => state.user);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [deviceName, setDeviceName] = useState("");
   const [deviceLocation, setDeviceLocation] = useState("");
+  const [deviceSerialNumber, setDeviceSerialNumber] = useState("");
   const [editingDevice, setEditingDevice] = useState<FallDetectDevice | null>(
     null,
   );
@@ -56,49 +61,88 @@ export default function FallDetectDevices({ devices }: FallDetectDevicesProps) {
     }
   };
 
-  const handleAddDevice = () => {
-    // TODO: Implement add device logic
-    console.log("Adding device:", {
-      name: deviceName,
-      location: deviceLocation,
-    });
-    // Reset form
-    setDeviceName("");
-    setDeviceLocation("");
-    setIsDialogOpen(false);
+  const handleAddDevice = async () => {
+    try {
+      const response = await fetch("/api/device/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${user?.token}`,
+        },
+        body: JSON.stringify({
+          uid: deviceSerialNumber,
+          device_name: deviceName,
+          location: deviceLocation,
+        }),
+      });
+      const data = await response.json();
+      if (response.ok) {
+        setIsDialogOpen(false);
+        setDeviceName("");
+        setDeviceLocation("");
+        setDeviceSerialNumber("");
+        // Update store
+        useDeviceStore.getState().addDevice(data.device);
+        // Update local state
+        setDevicesList((prev) => [...prev, data.device]);
+      }
+    } catch (error) {
+      console.error("Error adding device:", error);
+    }
   };
 
   const handleEditDevice = (device: FallDetectDevice) => {
     setEditingDevice(device);
-    setDeviceName(device.name);
+    setDeviceName(device.device_name);
     setDeviceLocation(device.location);
+    setDeviceSerialNumber(device.uid);
     setIsEditDialogOpen(true);
   };
 
-  const handleUpdateDevice = () => {
+  const handleUpdateDevice = async () => {
     if (!editingDevice) return;
 
-    // TODO: Implement update device logic
-    console.log("Updating device:", {
-      id: editingDevice.id,
-      name: deviceName,
-      location: deviceLocation,
-    });
+    try {
+      const response = await fetch(`/api/device/update/${editingDevice._id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${user?.token}`,
+        },
+        body: JSON.stringify({
+          device_name: deviceName,
+          location: deviceLocation,
+        }),
+      });
+      const data = await response.json();
+      if (response.ok) {
+        // Update store
+        useDeviceStore.getState().updateDevice(editingDevice._id, {
+          device_name: deviceName,
+          location: deviceLocation,
+        });
 
-    // Update local state
-    setDevicesList((prev) =>
-      prev.map((device) =>
-        device.id === editingDevice.id
-          ? { ...device, name: deviceName, location: deviceLocation }
-          : device,
-      ),
-    );
+        // Update local state
+        setDevicesList((prev) =>
+          prev.map((device) =>
+            device._id === editingDevice._id
+              ? { ...device, device_name: deviceName, location: deviceLocation }
+              : device,
+          ),
+        );
 
-    // Reset form
-    setDeviceName("");
-    setDeviceLocation("");
-    setEditingDevice(null);
-    setIsEditDialogOpen(false);
+        // Reset form
+        setDeviceName("");
+        setDeviceLocation("");
+        setDeviceSerialNumber("");
+        setEditingDevice(null);
+        setIsEditDialogOpen(false);
+      } else {
+        console.error("Error updating device:", data.error);
+      }
+    } catch (error) {
+      console.error("Error updating device:", error);
+    }
   };
 
   return (
@@ -136,53 +180,44 @@ export default function FallDetectDevices({ devices }: FallDetectDevicesProps) {
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
               {devicesList.map((device) => (
                 <Card
-                  key={device.id}
+                  key={device._id}
                   className="border-slate-200 transition-shadow hover:shadow-md"
                 >
                   <CardHeader className="pb-3">
-                    <div className="flex items-start justify-between">
+                    <div className="flex items-center justify-between gap-2">
                       <div className="flex-1">
                         <CardTitle className="mb-1 text-sm font-bold text-slate-800">
-                          {device.name}
+                          {device.device_name}
                         </CardTitle>
                         <p className="text-xs text-slate-500">
-                          {device.location}
+                          {device.location || "Unknown"}
                         </p>
                       </div>
                       <span
                         className={`rounded-full border px-2 py-1 text-xs font-bold ${getStatusStyles(
-                          device.status,
+                          device.status || "unknown",
                         )}`}
                       >
-                        {device.status.toUpperCase()}
+                        {(device.status || "unknown").toUpperCase()}
                       </span>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="shrink-0"
+                        onClick={() => handleEditDevice(device)}
+                      >
+                        <Pencil className="h-3 w-3" />
+                      </Button>
                     </div>
                   </CardHeader>
                   <CardContent className="space-y-3 pt-0">
                     <div className="flex items-center justify-between text-xs">
                       <span className="text-slate-500">Last Activity</span>
                       <span className="text-slate-700">
-                        {device.lastActivity}
+                        {device.last_seen
+                          ? new Date(device.last_seen).toLocaleString()
+                          : "Unknown"}
                       </span>
-                    </div>
-                    {device.alertsCount > 0 && (
-                      <div className="flex items-center justify-between text-xs">
-                        <span className="text-slate-500">Active Alerts</span>
-                        <span className="rounded-full bg-red-100 px-2 py-1 font-bold text-red-700">
-                          {device.alertsCount}
-                        </span>
-                      </div>
-                    )}
-                    <div className="pt-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="w-full"
-                        onClick={() => handleEditDevice(device)}
-                      >
-                        <Pencil className="mr-2 h-3 w-3" />
-                        Edit
-                      </Button>
                     </div>
                   </CardContent>
                 </Card>
@@ -202,6 +237,17 @@ export default function FallDetectDevices({ devices }: FallDetectDevicesProps) {
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
+              <Label htmlFor="device-serial-number">
+                Device Serial Number (UID)
+              </Label>
+              <Input
+                id="device-serial-number"
+                placeholder="e.g., SN123456789"
+                value={deviceSerialNumber}
+                onChange={(e) => setDeviceSerialNumber(e.target.value)}
+              />
+            </div>
             <div className="grid gap-2">
               <Label htmlFor="device-name">Device Name</Label>
               <Input
@@ -241,6 +287,17 @@ export default function FallDetectDevices({ devices }: FallDetectDevicesProps) {
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="grid gap-2">
+              <Label htmlFor="edit-device-serial-number">
+                Device Serial Number (UID)
+              </Label>
+              <Input
+                id="edit-device-serial-number"
+                value={deviceSerialNumber}
+                disabled
+                className="cursor-not-allowed bg-slate-100"
+              />
+            </div>
+            <div className="grid gap-2">
               <Label htmlFor="edit-device-name">Device Name</Label>
               <Input
                 id="edit-device-name"
@@ -267,6 +324,7 @@ export default function FallDetectDevices({ devices }: FallDetectDevicesProps) {
                 setEditingDevice(null);
                 setDeviceName("");
                 setDeviceLocation("");
+                setDeviceSerialNumber("");
               }}
             >
               Cancel
@@ -278,14 +336,3 @@ export default function FallDetectDevices({ devices }: FallDetectDevicesProps) {
     </div>
   );
 }
-
-export const sampleDevices: FallDetectDevice[] = [
-  {
-    id: "1",
-    name: "Device A001",
-    location: "Living Room",
-    status: "online",
-    lastActivity: "2 minutes ago",
-    alertsCount: 0,
-  },
-];

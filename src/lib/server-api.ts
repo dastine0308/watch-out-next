@@ -53,13 +53,14 @@ async function fetchWithAuth(
 
 export async function getUserInfo(userId?: string) {
   try {
-    const endpoint = userId ? `/user/${userId}` : "/user/";
+    const endpoint = `/user/${userId}`;
     const response = await fetchWithAuth(endpoint);
 
     if (response.status !== 200) {
       let errorMessage = "Failed to get user info";
+      const text = await response.text();
       try {
-        const errorData = await response.json();
+        const errorData = JSON.parse(text);
         errorMessage = errorData.error || errorData.message || errorMessage;
         console.error("API Error Response:", {
           status: response.status,
@@ -69,7 +70,6 @@ export async function getUserInfo(userId?: string) {
         });
       } catch {
         // If response is not JSON, use status text
-        const text = await response.text();
         console.error("API Error (non-JSON):", {
           status: response.status,
           statusText: response.statusText,
@@ -88,50 +88,68 @@ export async function getUserInfo(userId?: string) {
   }
 }
 
-export async function getDevicesList(userId?: string) {
+export async function getDevicesList() {
   try {
-    const endpoint = userId ? `/device/list?user_id=${userId}` : "/device/list";
-    const response = await fetchWithAuth(endpoint);
+    const endpoint = "/device/list";
+    const response = await fetchWithAuth(endpoint, {
+      method: "GET",
+    });
 
     if (response.status !== 200) {
       let errorMessage = "Failed to get devices list";
+      const text = await response.text();
       try {
-        const errorData = await response.json();
+        const errorData = JSON.parse(text);
         errorMessage = errorData.error || errorData.message || errorMessage;
-        console.error("API Error Response:", {
-          status: response.status,
-          statusText: response.statusText,
-          error: errorData,
-          endpoint,
-        });
       } catch {
-        // If response is not JSON, use status text
-        const text = await response.text();
-        console.error("API Error (non-JSON):", {
-          status: response.status,
-          statusText: response.statusText,
-          body: text,
-          endpoint,
-        });
         errorMessage = `HTTP ${response.status}: ${response.statusText}`;
       }
       throw new Error(errorMessage);
     }
 
-    const data = await response.json();
-
-    // Transform API response to match expected format
-    if (Array.isArray(data)) {
-      return data;
-    } else if (data?.devices && Array.isArray(data.devices)) {
-      return data.devices;
-    } else {
-      // Return empty array if structure is unexpected
-      console.warn("Unexpected devices data structure:", data);
-      return [];
+    try {
+      const data = await response.json();
+      console.log("devices list data", data?.devices);
+      return data?.devices;
+    } catch (error) {
+      console.error("Error parsing devices list:", error);
+      throw new Error("Failed to parse devices list");
     }
   } catch (error) {
     console.error("Error fetching devices list:", error);
+    throw error;
+  }
+}
+
+export async function getAlertsList() {
+  try {
+    const endpoint = "/alert/list";
+    const response = await fetchWithAuth(endpoint, {
+      method: "GET",
+    });
+    if (response.status !== 200) {
+      let errorMessage = "Failed to get alerts list";
+      const text = await response.text();
+      try {
+        const errorData = JSON.parse(text);
+        errorMessage = errorData.error || errorData.message || errorMessage;
+      } catch {
+        errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+      }
+      throw new Error(errorMessage || "Failed to get alerts list");
+    }
+    try {
+      const data = await response.json();
+      console.log("alerts list response", response);
+      console.log("alerts list data", data);
+      console.log("alerts list data", data?.alerts);
+      return data?.alerts;
+    } catch (error) {
+      console.error("Error parsing alerts list:", error);
+      throw new Error("Failed to parse alerts list");
+    }
+  } catch (error) {
+    console.error("Error fetching alerts list:", error);
     throw error;
   }
 }

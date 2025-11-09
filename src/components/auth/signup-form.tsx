@@ -208,7 +208,8 @@ export function SignupForm() {
       <Button
         type="submit"
         disabled={isLoading}
-        className="h-9 w-full rounded-md bg-blue-600 text-sm font-normal text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+        variant="default"
+        className="h-9 w-full text-sm font-normal disabled:cursor-not-allowed disabled:opacity-50"
       >
         {isLoading ? "Signing up..." : "Sign Up"}
       </Button>

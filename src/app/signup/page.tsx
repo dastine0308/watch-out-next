@@ -25,16 +25,16 @@ export default function SignupPage() {
           <div className="max-w-[600px] flex-1 space-y-8">
             {/* Logo */}
             <div className="flex items-center gap-4">
-              <h1 className="text-3xl font-bold text-gray-900">Watch Out!</h1>
+              <h1 className="text-3xl font-bold text-gray-900">WatchOut</h1>
             </div>
 
             {/* Main Heading */}
             <div className="space-y-4">
               <h2 className="text-4xl font-bold leading-[1.2] text-gray-900">
-                Monitor all alerts in one place
+                All Fall Detection. Instant Alerts. Total Peace of Mind.
               </h2>
               <p className="max-w-[516px] text-lg leading-relaxed text-gray-600">
-                Monitor all alerts in one place
+                Protect the ones you care about.
               </p>
             </div>
 
@@ -62,7 +62,9 @@ export default function SignupPage() {
           <div className="w-full max-w-[400px] flex-shrink-0">
             <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-xl">
               <div className="mb-6 border-b border-gray-200 pb-6">
-                <h3 className="mb-2 text-2xl font-bold text-gray-900">Sign Up</h3>
+                <h3 className="mb-2 text-2xl font-bold text-gray-900">
+                  Sign Up
+                </h3>
               </div>
               <SignupForm />
             </div>
@@ -74,14 +76,14 @@ export default function SignupPage() {
           {/* Logo & Branding */}
           <div className="space-y-4 text-center">
             <div className="flex items-center justify-center gap-3">
-              <h1 className="text-2xl font-bold text-gray-900">Watch Out!</h1>
+              <h1 className="text-2xl font-bold text-gray-900">WatchOut</h1>
             </div>
             <div className="space-y-2">
               <h2 className="text-xl font-bold text-gray-900">
-                Monitor all alerts in one place
+                All Fall Detection. Instant Alerts. Total Peace of Mind.
               </h2>
               <p className="text-sm text-gray-600">
-                Monitor all alerts in one place
+                Protect the ones you care about.
               </p>
             </div>
           </div>
@@ -90,9 +92,6 @@ export default function SignupPage() {
           <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-xl">
             <div className="mb-5 border-b border-gray-200 pb-4">
               <h3 className="mb-1 text-xl font-bold text-gray-900">Sign Up</h3>
-              <p className="text-xs text-gray-500">
-                Create your account to get started
-              </p>
             </div>
             <SignupForm />
           </div>
@@ -108,9 +107,7 @@ export default function SignupPage() {
                   <h3 className="mb-0.5 text-xs font-bold text-gray-900">
                     {feature.title}
                   </h3>
-                  <p className="text-xs text-gray-600">
-                    {feature.description}
-                  </p>
+                  <p className="text-xs text-gray-600">{feature.description}</p>
                 </div>
               </div>
             ))}

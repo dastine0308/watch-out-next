@@ -14,7 +14,6 @@ import { useUserStore } from "@/store/user-store";
 
 export function LoginForm() {
   const router = useRouter();
-  const searchParams = useSearchParams();
   const [formData, setFormData] = useState<LoginFormData>({
     email: "",
     password: "",
@@ -106,10 +105,7 @@ export function LoginForm() {
       </div>
 
       <div className="space-y-2">
-        <Label
-          htmlFor="password"
-          className="text-sm font-medium text-gray-900"
-        >
+        <Label htmlFor="password" className="text-sm font-medium text-gray-900">
           Password
         </Label>
         <div className="relative">
@@ -146,7 +142,8 @@ export function LoginForm() {
 
       <Button
         type="submit"
-        className="h-9 w-full rounded-md bg-blue-600 text-sm font-normal text-white hover:bg-blue-700"
+        variant="default"
+        className="h-9 w-full text-sm font-normal disabled:cursor-not-allowed disabled:opacity-50"
       >
         Login
       </Button>

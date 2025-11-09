@@ -17,7 +17,7 @@ export default function Header() {
         <div className="flex h-16 items-center justify-between">
           <div className="flex items-center space-x-4">
             <Link href="/" className="text-lg font-bold">
-              Watch Out
+              WatchOut
             </Link>
           </div>
 
@@ -34,9 +34,7 @@ export default function Header() {
           </div>
 
           <div className="flex items-center gap-2 sm:hidden">
-            <div className="hidden md:block">
-              {userEmail && <UserAvatar />}
-            </div>
+            <div className="hidden md:block">{userEmail && <UserAvatar />}</div>
             <button
               aria-label="Menu"
               className="rounded-md p-2 text-gray-700 hover:bg-gray-100 dark:text-gray-200"

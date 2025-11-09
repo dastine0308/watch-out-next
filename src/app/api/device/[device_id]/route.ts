@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { device_id: string } },
+  { params }: { params: Promise<{ device_id: string }> },
 ) {
   const token = request.cookies.get("auth-token")?.value;
   if (!token) {
@@ -18,10 +18,7 @@ export async function GET(
     );
   }
 
-  const { device_id } = params;
-
-  // Based on user's requirement: /device/update/{device_id}
-  // This endpoint might return device info (GET) or update device (PUT/PATCH)
+  const { device_id } = await params;
   const apiUrl = `${apiBaseUrl.replace(/\/$/, "")}/device/update/${device_id}`;
 
   console.log(`Attempting to connect to: ${apiUrl}`);
@@ -76,4 +73,3 @@ export async function GET(
     );
   }
 }
-
