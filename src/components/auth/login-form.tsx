@@ -86,12 +86,12 @@ export function LoginForm() {
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       {errors.general && (
-        <div className="rounded-md border border-red-500/50 bg-red-500/10 p-3">
-          <p className="text-xs text-red-400">{errors.general}</p>
+        <div className="rounded-md border border-red-500/50 bg-red-50 p-3">
+          <p className="text-xs text-red-600">{errors.general}</p>
         </div>
       )}
       <div className="space-y-2">
-        <Label htmlFor="email" className="text-sm font-medium text-slate-300">
+        <Label htmlFor="email" className="text-sm font-medium text-gray-900">
           Email Address
         </Label>
         <Input
@@ -101,14 +101,14 @@ export function LoginForm() {
           value={formData.email}
           onChange={(e) => setFormData({ ...formData, email: e.target.value })}
           required
-          className="h-[34px] border-slate-600 bg-slate-900 text-sm text-white placeholder:text-slate-500 focus-visible:ring-2 focus-visible:ring-blue-500"
+          className="h-[34px] text-sm"
         />
       </div>
 
       <div className="space-y-2">
         <Label
           htmlFor="password"
-          className="text-sm font-medium text-slate-300"
+          className="text-sm font-medium text-gray-900"
         >
           Password
         </Label>
@@ -122,14 +122,14 @@ export function LoginForm() {
               setFormData({ ...formData, password: e.target.value })
             }
             required
-            className={`h-[34px] border-slate-600 bg-slate-900 pr-10 text-sm text-white placeholder:text-slate-500 focus-visible:ring-2 focus-visible:ring-blue-500 ${
+            className={`h-[34px] pr-10 text-sm ${
               errors.password ? "border-red-500" : ""
             }`}
           />
           <button
             type="button"
             onClick={() => setShowPassword(!showPassword)}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-300 focus:outline-none"
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 focus:outline-none"
             aria-label={showPassword ? "Hide password" : "Show password"}
           >
             {showPassword ? (
@@ -140,7 +140,7 @@ export function LoginForm() {
           </button>
         </div>
         {errors.password && (
-          <p className="text-xs text-red-400">{errors.password}</p>
+          <p className="text-xs text-red-500">{errors.password}</p>
         )}
       </div>
 
@@ -151,12 +151,12 @@ export function LoginForm() {
         Login
       </Button>
 
-      <div className="border-t border-slate-700 pt-4">
-        <p className="text-center text-sm text-slate-400">
+      <div className="border-t border-gray-200 pt-4">
+        <p className="text-center text-sm text-gray-600">
           Don&apos;t have an account?{" "}
           <Link
             href="/signup"
-            className="inline text-blue-400 hover:text-blue-300"
+            className="inline text-blue-600 hover:text-blue-700"
           >
             Sign up
           </Link>
