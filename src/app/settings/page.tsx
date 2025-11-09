@@ -15,9 +15,12 @@ import {
 } from "@/components/ui/card";
 import { phoneNumberSchema } from "@/lib/validation";
 import { ZodError } from "zod";
+import { useUserStore } from "@/store/user-store";
 
 export default function SettingsPage() {
   const router = useRouter();
+  const user = useUserStore((state) => state.user);
+  const setUser = useUserStore((state) => state.setUser);
   const [phoneNumber, setPhoneNumber] = useState("");
   const [email, setEmail] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -25,15 +28,13 @@ export default function SettingsPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [touched, setTouched] = useState(false);
 
-  // Load user data (mock - replace with actual data fetching)
+  // Load user data from zustand store
   useEffect(() => {
-    // TODO: Replace with actual user data fetching
-    // For now, using mock data
-    const mockEmail = localStorage.getItem("userEmail") || "user@example.com";
-    const mockPhoneNumber = localStorage.getItem("userPhoneNumber") || "";
-    setEmail(mockEmail);
-    setPhoneNumber(mockPhoneNumber);
-  }, []);
+    const userEmail = user?.email || "";
+    const userPhoneNumber = user?.phoneNumber || "";
+    setEmail(userEmail);
+    setPhoneNumber(userPhoneNumber);
+  }, [user]);
 
   // Validate phone number on change (only show error after touched)
   const validatePhoneNumber = (value: string) => {
@@ -76,8 +77,11 @@ export default function SettingsPage() {
       // Simulate API call
       await new Promise((resolve) => setTimeout(resolve, 500));
 
-      // Save to localStorage (mock - replace with actual API)
-      localStorage.setItem("userPhoneNumber", phoneNumber);
+      // Update user data in zustand store
+      setUser({
+        ...user,
+        phoneNumber,
+      });
 
       setSuccess(true);
       setTimeout(() => {

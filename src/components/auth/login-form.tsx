@@ -2,14 +2,20 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Eye, EyeOff } from "lucide-react";
 import { ZodError } from "zod";
 import { LoginFormData, loginSchema } from "@/lib/validation";
+import { useRouter } from "next/navigation";
+import { useUserStore } from "@/store/user-store";
 
 export function LoginForm() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const setUser = useUserStore((state) => state.setUser);
   const [formData, setFormData] = useState<LoginFormData>({
     email: "",
     password: "",
@@ -18,28 +24,61 @@ export function LoginForm() {
   const [errors, setErrors] = useState<{
     email?: string;
     password?: string;
+    general?: string;
   }>({});
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setErrors({});
 
     try {
       const validatedData = loginSchema.parse(formData);
-      // TODO: Implement login logic
-      console.log("Login attempt:", validatedData);
+
+      const response = await fetch("/api/user/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(validatedData),
+      });
+
+      const data = await response.json();
+      console.log(data);
+
+      if (data?.error) {
+        setErrors({ general: data.error });
+        return;
+      }
+
+      // save token to localStorage
+      if (data?.token) {
+        localStorage.setItem("token", data.token);
+      }
+
+      // save user data (excluding token) to zustand store
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { token, ...userData } = data;
+      if (Object.keys(userData).length > 0) {
+        setUser(userData);
+      }
+
+      // check if there is a redirect parameter, if so, redirect to that page, otherwise redirect to home page
+      const redirect = searchParams.get("redirect");
+      router.push(redirect || "/");
     } catch (error) {
       if (error instanceof ZodError) {
         const fieldErrors: {
           email?: string;
           password?: string;
+          general?: string;
         } = {};
 
         error.issues.forEach((issue) => {
-          // TODO: Implement login logic
           const path = issue.path[0] as string;
           if (path === "email" || path === "password") {
             fieldErrors[path] = issue.message;
+          } else {
+            fieldErrors.general = issue.message;
           }
         });
 
@@ -50,6 +89,11 @@ export function LoginForm() {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
+      {errors.general && (
+        <div className="rounded-md border border-red-500/50 bg-red-500/10 p-3">
+          <p className="text-xs text-red-400">{errors.general}</p>
+        </div>
+      )}
       <div className="space-y-2">
         <Label htmlFor="email" className="text-sm font-medium text-slate-300">
           Email Address

@@ -1,20 +1,15 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { LogOut, Menu, X } from "lucide-react";
 import { UserAvatar } from "@/components/user-avatar";
+import { useUserStore } from "@/store/user-store";
 
 export default function Header() {
   const [open, setOpen] = useState(false);
-  const [userEmail, setUserEmail] = useState<string>("");
-
-  // Load user email (mock - replace with actual authentication)
-  useEffect(() => {
-    // TODO: Replace with actual user data fetching
-    const email = localStorage.getItem("userEmail") || "user@example.com";
-    setUserEmail(email);
-  }, []);
+  const user = useUserStore((state) => state.user);
+  const userEmail = user?.email || "";
 
   return (
     <header className="sticky top-0 z-40 w-full bg-white/90 backdrop-blur-md dark:bg-gray-900/80">
@@ -35,12 +30,12 @@ export default function Header() {
                 Dashboard
               </Link>
             </nav> */}
-            {userEmail && <UserAvatar email={userEmail} />}
+            {userEmail && <UserAvatar />}
           </div>
 
           <div className="flex items-center gap-2 sm:hidden">
             <div className="hidden md:block">
-              {userEmail && <UserAvatar email={userEmail} />}
+              {userEmail && <UserAvatar />}
             </div>
             <button
               aria-label="Menu"

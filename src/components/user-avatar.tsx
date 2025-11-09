@@ -3,13 +3,11 @@
 import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { LogOut, Settings } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { useUserStore } from "@/store/user-store";
 
-interface UserAvatarProps {
-  email: string;
-}
-
-export function UserAvatar({ email }: UserAvatarProps) {
+export function UserAvatar() {
+  const user = useUserStore((state) => state.user);
+  const email = user?.email || "";
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
@@ -41,10 +39,20 @@ export function UserAvatar({ email }: UserAvatarProps) {
     };
   }, [isOpen]);
 
-  const handleLogout = () => {
-    // TODO: Implement actual logout logic
-    // Clear user session, tokens, etc.
-    console.log("Logging out...");
+  const handleLogout = async () => {
+    const clearUser = useUserStore.getState().clearUser;
+
+    // clear token cookie through API
+    try {
+      await fetch("/api/user/logout", { method: "POST" });
+    } catch (error) {
+      console.error("Logout API error:", error);
+    }
+
+    // clear token from localStorage
+    localStorage.removeItem("token");
+    // clear user data from zustand store
+    clearUser();
     router.push("/login");
     setIsOpen(false);
   };

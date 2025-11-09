@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -10,19 +11,23 @@ import { signupSchema, phoneNumberSchema } from "@/lib/validation";
 import { ZodError } from "zod";
 
 export function SignupForm() {
+  const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<{
     email?: string;
     phoneNumber?: string;
     password?: string;
+    general?: string;
   }>({});
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setErrors({});
+    setIsLoading(true);
 
     try {
       const validatedData = signupSchema.parse({
@@ -30,8 +35,31 @@ export function SignupForm() {
         phoneNumber,
         password,
       });
-      // TODO: Implement signup logic
-      console.log("Signup attempt:", validatedData);
+
+      const response = await fetch("/api/user/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: validatedData.email,
+          phoneNumber: validatedData.phoneNumber,
+          password: validatedData.password,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        const errorMessage =
+          data.message ||
+          data.error ||
+          "Registration failed, please try again later";
+        setErrors({ general: errorMessage });
+        return;
+      }
+
+      router.push("/login");
     } catch (error) {
       if (error instanceof ZodError) {
         const fieldErrors: {
@@ -52,7 +80,18 @@ export function SignupForm() {
         });
 
         setErrors(fieldErrors);
+      } else if (error instanceof Error) {
+        setErrors({
+          general:
+            "Network error, please check your network connection and try again",
+        });
+      } else {
+        setErrors({
+          general: "An unexpected error occurred, please try again later",
+        });
       }
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -60,7 +99,6 @@ export function SignupForm() {
     const value = e.target.value;
     setPhoneNumber(value);
 
-    // 即時驗證電話號碼
     if (value) {
       const result = phoneNumberSchema.safeParse(value);
       if (!result.success) {
@@ -86,6 +124,12 @@ export function SignupForm() {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
+      {errors.general && (
+        <div className="rounded-md border border-red-500/50 bg-red-500/10 p-3">
+          <p className="text-xs text-red-400">{errors.general}</p>
+        </div>
+      )}
+
       <div className="space-y-2">
         <Label htmlFor="email" className="text-sm font-medium text-slate-300">
           Email Address
@@ -97,7 +141,8 @@ export function SignupForm() {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
-          className={`h-[34px] border-slate-600 bg-slate-900 text-sm text-white placeholder:text-slate-500 focus-visible:ring-2 focus-visible:ring-blue-500 ${
+          disabled={isLoading}
+          className={`h-[34px] border-slate-600 bg-slate-900 text-sm text-white placeholder:text-slate-500 focus-visible:ring-2 focus-visible:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-50 ${
             errors.email ? "border-red-500" : ""
           }`}
         />
@@ -115,7 +160,8 @@ export function SignupForm() {
           value={phoneNumber}
           onChange={handlePhoneNumberChange}
           required
-          className={`h-[34px] border-slate-600 bg-slate-900 text-sm text-white placeholder:text-slate-500 focus-visible:ring-2 focus-visible:ring-blue-500 ${
+          disabled={isLoading}
+          className={`h-[34px] border-slate-600 bg-slate-900 text-sm text-white placeholder:text-slate-500 focus-visible:ring-2 focus-visible:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-50 ${
             errors.phoneNumber ? "border-red-500" : ""
           }`}
         />
@@ -139,7 +185,8 @@ export function SignupForm() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
-            className={`h-[34px] border-slate-600 bg-slate-900 pr-10 text-sm text-white placeholder:text-slate-500 focus-visible:ring-2 focus-visible:ring-blue-500 ${
+            disabled={isLoading}
+            className={`h-[34px] border-slate-600 bg-slate-900 pr-10 text-sm text-white placeholder:text-slate-500 focus-visible:ring-2 focus-visible:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-50 ${
               errors.password ? "border-red-500" : ""
             }`}
           />
@@ -163,9 +210,10 @@ export function SignupForm() {
 
       <Button
         type="submit"
-        className="h-9 w-full rounded-md bg-blue-600 text-sm font-normal text-white hover:bg-blue-700"
+        disabled={isLoading}
+        className="h-9 w-full rounded-md bg-blue-600 text-sm font-normal text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
       >
-        Sign Up
+        {isLoading ? "Signing up..." : "Sign Up"}
       </Button>
 
       <div className="border-t border-slate-700 pt-4">
