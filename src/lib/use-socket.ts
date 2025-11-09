@@ -16,7 +16,7 @@ export function useSocket(options: UseSocketOptions = {}) {
   // Update callback function references, but not trigger re-connection
   useEffect(() => {
     callbacksRef.current = options;
-  }, [options.onNewAlert, options.onAlertUpdate]);
+  }, [options]);
 
   useEffect(() => {
     // Only initialize on client side

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { LogOut, Menu, X } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import { UserAvatar } from "@/components/user-avatar";
 import { useUserStore } from "@/store/user-store";
 

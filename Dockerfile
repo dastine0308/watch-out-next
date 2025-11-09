@@ -57,7 +57,8 @@ EXPOSE 3000
 
 ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
-ENV NODE_TLS_REJECT_UNAUTHORIZED=0
+# Note: NODE_TLS_REJECT_UNAUTHORIZED should only be set to 0 in development
+# For production, set it via docker-compose.yml or environment variables if needed
 
 # start application (using tsx to run TypeScript)
 CMD ["npx", "tsx", "server.ts"]

@@ -9,25 +9,40 @@ import { Alert } from "@/components/alerts-table";
 async function DevicesContent() {
   try {
     const alerts = await getAlertsList();
-    const formattedAlerts =
-      alerts.length > 0
-        ? alerts.map((alert: Alert) => ({
-            id: alert.id,
-            title: alert.title,
-            status: alert.status,
-            description: alert.description,
-            timeAgo: alert.timeAgo,
-            location: alert.location,
-          }))
-        : [];
-    console.log("formattedAlerts", formattedAlerts);
+    const formattedAlerts = Array.isArray(alerts) ? (alerts as Alert[]) : [];
+
+    // 計算 alert 統計數據
+    const totalAlerts = formattedAlerts.length;
+    const unhandledAlerts = formattedAlerts.filter(
+      (alert) => alert.status === "unhandled",
+    ).length;
+    const resolvedAlerts = formattedAlerts.filter(
+      (alert) => alert.status === "resolved",
+    ).length;
 
     const devices = await getDevicesList();
-    const formattedDevices =
-      devices.length > 0 ? (devices as FallDetectDevice[]) : [];
-    return <HomeClient devices={formattedDevices} alerts={formattedAlerts} />;
-  } catch (error) {
-    return <HomeClient devices={[]} alerts={[]} />;
+    const formattedDevices = Array.isArray(devices)
+      ? (devices as FallDetectDevice[])
+      : [];
+    return (
+      <HomeClient
+        devices={formattedDevices}
+        alerts={formattedAlerts}
+        stats={{
+          total: totalAlerts,
+          unhandled: unhandledAlerts,
+          resolved: resolvedAlerts,
+        }}
+      />
+    );
+  } catch {
+    return (
+      <HomeClient
+        devices={[]}
+        alerts={[]}
+        stats={{ total: 0, unhandled: 0, resolved: 0 }}
+      />
+    );
   }
 }
 

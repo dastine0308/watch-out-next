@@ -7,10 +7,10 @@ import { SearchIcon } from "lucide-react";
 
 export type Alert = {
   id: string;
-  title: string;
+  device_id: string;
+  alert_name: string;
   status: "unhandled" | "resolved";
-  description: string;
-  timeAgo: string;
+  time: string;
   location: string;
 };
 
@@ -37,13 +37,14 @@ export default function AlertsTable({
     }
   };
 
-  const filteredAlerts = alerts.filter((alert) => {
+  // 確保 alerts 是數組，如果不是則使用空數組
+  const safeAlerts = Array.isArray(alerts) ? alerts : [];
+  const filteredAlerts = safeAlerts.filter((alert) => {
     const matchesStatus =
       filterStatus === "all" || alert.status === filterStatus;
     const matchesSearch =
       searchQuery === "" ||
-      alert.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      alert.description.toLowerCase().includes(searchQuery.toLowerCase());
+      alert.alert_name.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesStatus && matchesSearch;
   });
 
@@ -121,7 +122,7 @@ export default function AlertsTable({
                   <div className="flex-1">
                     <div className="mb-2 flex flex-wrap items-center gap-3">
                       <h4 className="text-base font-bold text-slate-800">
-                        {alert.title}
+                        {alert.alert_name}
                       </h4>
                       <span
                         className={`rounded-full border px-3 py-1 text-xs font-bold ${getStatusStyles(
@@ -131,11 +132,8 @@ export default function AlertsTable({
                         {alert.status}
                       </span>
                     </div>
-                    <p className="mb-2 text-sm text-slate-500">
-                      {alert.description}
-                    </p>
                     <div className="flex flex-wrap items-center gap-4 text-xs text-slate-400">
-                      <span>{alert.timeAgo}</span>
+                      <span>{new Date(alert.time).toLocaleString()}</span>
                       <span>{alert.location}</span>
                     </div>
                   </div>

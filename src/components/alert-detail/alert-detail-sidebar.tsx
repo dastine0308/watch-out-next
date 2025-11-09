@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   Sheet,
   SheetContent,
@@ -12,19 +12,30 @@ import VideoPlayer from "@/components/alert-detail/video-player";
 import VideoInfo from "@/components/alert-detail/video-info";
 import RecordingDetails from "@/components/alert-detail/recording-details";
 
-// Mock data - in production, this would come from an API
-const mockAlertData = {
-  id: "ALERT-2024-001847",
-  title: "Fall Detected",
-  description:
-    "This recording captures the fall detected on November 8, 2024 at 14:32:15 UTC. The video shows the fall detected in the living room.",
-  startTime: "2025-11-08 14:30:00 UTC",
-  endTime: "2025-11-08 14:36:30 UTC",
-  duration: "6 minutes 30 seconds",
-  resolution: "1920 × 1080",
-  fileSize: "245 MB",
-  isEncrypted: true,
-};
+interface AlertDetailData {
+  id?: string;
+  alert_id?: string;
+  alert_name?: string;
+  title?: string;
+  description?: string;
+  video_url?: string;
+  videoUrl?: string;
+  s3_url?: string;
+  duration?: string;
+  resolution?: string;
+  file_size?: number | string;
+  fileSize?: string;
+  start_time?: string;
+  startTime?: string;
+  end_time?: string;
+  endTime?: string;
+  time?: string;
+  created_at?: string;
+  location?: string;
+  status?: string;
+  device_id?: string;
+  [key: string]: unknown;
+}
 
 interface AlertDetailSidebarProps {
   alertId: string | null;
@@ -37,10 +48,70 @@ export default function AlertDetailSidebar({
   open,
   onOpenChange,
 }: AlertDetailSidebarProps) {
-  // In production, fetch alert data based on alertId
-  const alert = mockAlertData;
+  const [alertData, setAlertData] = useState<AlertDetailData | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!alertId || !open) {
+      setAlertData(null);
+      return;
+    }
+
+    const fetchAlertDetail = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const response = await fetch(`/api/alert/${alertId}`);
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || "Failed to fetch alert detail");
+        }
+        const data = await response.json();
+        console.log("alert detail data", JSON.stringify(data, null, 2));
+        setAlertData(data);
+      } catch (err) {
+        console.error("Error fetching alert detail:", err);
+        setError(err instanceof Error ? err.message : "Failed to load alert");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAlertDetail();
+  }, [alertId, open]);
 
   if (!alertId) return null;
+
+  // 格式化檔案大小
+  const formatFileSize = (bytes: number | string | undefined): string => {
+    if (!bytes) return "N/A";
+    const numBytes = typeof bytes === "string" ? parseInt(bytes) : bytes;
+    if (isNaN(numBytes)) return "N/A";
+    if (numBytes < 1024) return `${numBytes} B`;
+    if (numBytes < 1024 * 1024) return `${(numBytes / 1024).toFixed(2)} KB`;
+    return `${(numBytes / (1024 * 1024)).toFixed(2)} MB`;
+  };
+
+  // 從 API 資料中提取值，支援多種可能的欄位名稱
+  const alertTitle =
+    alertData?.title || alertData?.alert_name || "Alert Details";
+  const alertIdDisplay = alertData?.id || alertData?.alert_id || alertId;
+  // 優先使用 s3_url，這是 API 返回的主要影片 URL
+  const videoUrl =
+    alertData?.s3_url || alertData?.video_url || alertData?.videoUrl;
+  const duration = alertData?.duration || "N/A";
+  const resolution = alertData?.resolution || "N/A";
+  const fileSize = formatFileSize(alertData?.file_size || alertData?.fileSize);
+  const timeDisplay =
+    alertData?.time ||
+    alertData?.created_at ||
+    alertData?.start_time ||
+    "unknown time";
+  const locationDisplay = alertData?.location || "";
+  const description =
+    alertData?.description ||
+    `Alert detected at ${timeDisplay}${locationDisplay ? ` in ${locationDisplay}` : ""}`;
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -57,37 +128,56 @@ export default function AlertDetailSidebar({
         </SheetHeader>
 
         <div className="mt-6 space-y-6">
-          {/* Video Card */}
-          <Card>
-            <CardHeader className="border-b border-slate-200">
-              <div className="flex items-center justify-between">
-                <h3 className="text-base font-bold text-slate-800">
-                  {alert.title}
-                </h3>
-                <p className="text-sm text-slate-500">Alert ID: {alert.id}</p>
+          {loading ? (
+            <div className="flex items-center justify-center py-12">
+              <div className="text-center">
+                <div className="mb-4 inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-r-transparent"></div>
+                <p className="text-sm text-slate-500">
+                  Loading alert details...
+                </p>
               </div>
-            </CardHeader>
-            <CardContent className="space-y-6 pt-6">
-              {/* Video Player */}
-              <div className="aspect-video w-full">
-                <VideoPlayer />
-              </div>
+            </div>
+          ) : error ? (
+            <div className="rounded-md bg-red-50 p-4 text-center">
+              <p className="text-sm text-red-600">{error}</p>
+            </div>
+          ) : (
+            <>
+              {/* Video Card */}
+              <Card>
+                <CardHeader className="border-b border-slate-200">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-base font-bold text-slate-800">
+                      {alertTitle}
+                    </h3>
+                    <p className="text-sm text-slate-500">
+                      Alert ID: {alertIdDisplay}
+                    </p>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-6 pt-6">
+                  {/* Video Player */}
+                  <div className="aspect-video w-full">
+                    <VideoPlayer videoUrl={videoUrl} />
+                  </div>
 
-              {/* Video Info */}
-              <VideoInfo
-                duration={alert.duration}
-                resolution={alert.resolution}
-                fileSize={alert.fileSize}
-              />
-            </CardContent>
-          </Card>
+                  {/* Video Info */}
+                  <VideoInfo
+                    duration={duration}
+                    resolution={resolution}
+                    fileSize={fileSize}
+                  />
+                </CardContent>
+              </Card>
 
-          {/* Recording Details Card */}
-          <Card>
-            <CardContent className="pt-6">
-              <RecordingDetails description={alert.description} />
-            </CardContent>
-          </Card>
+              {/* Recording Details Card */}
+              <Card>
+                <CardContent className="pt-6">
+                  <RecordingDetails description={description} />
+                </CardContent>
+              </Card>
+            </>
+          )}
         </div>
       </SheetContent>
     </Sheet>

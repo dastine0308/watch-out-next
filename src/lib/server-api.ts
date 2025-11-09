@@ -109,7 +109,6 @@ export async function getDevicesList() {
 
     try {
       const data = await response.json();
-      console.log("devices list data", data?.devices);
       return data?.devices;
     } catch (error) {
       console.error("Error parsing devices list:", error);
@@ -143,13 +142,53 @@ export async function getAlertsList() {
       console.log("alerts list response", response);
       console.log("alerts list data", data);
       console.log("alerts list data", data?.alerts);
-      return data?.alerts;
+      // 確保返回的是數組
+      const alerts = data?.alerts;
+      return Array.isArray(alerts) ? alerts : [];
     } catch (error) {
       console.error("Error parsing alerts list:", error);
       throw new Error("Failed to parse alerts list");
     }
   } catch (error) {
     console.error("Error fetching alerts list:", error);
+    throw error;
+  }
+}
+
+export async function getAlertDetail(alertId: string) {
+  try {
+    const endpoint = `/alert/${alertId}`;
+    const response = await fetchWithAuth(endpoint, {
+      method: "GET",
+    });
+
+    if (response.status !== 200) {
+      let errorMessage = "Failed to get alert detail";
+      const text = await response.text();
+      try {
+        const errorData = JSON.parse(text);
+        errorMessage = errorData.error || errorData.message || errorMessage;
+        console.error("API Error Response:", {
+          status: response.status,
+          statusText: response.statusText,
+          error: errorData,
+          endpoint,
+        });
+      } catch {
+        console.error("API Error (non-JSON):", {
+          status: response.status,
+          statusText: response.statusText,
+          body: text,
+          endpoint,
+        });
+        errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+      }
+      throw new Error(errorMessage);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error("Error fetching alert detail:", error);
     throw error;
   }
 }

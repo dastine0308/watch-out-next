@@ -20,7 +20,6 @@ import { useUserStore } from "@/store/user-store";
 export default function SettingsPage() {
   const router = useRouter();
   const user = useUserStore((state) => state.user);
-  const setUser = useUserStore((state) => state.setUser);
   const [phoneNumber, setPhoneNumber] = useState("");
   const [email, setEmail] = useState("");
   const [error, setError] = useState<string | null>(null);

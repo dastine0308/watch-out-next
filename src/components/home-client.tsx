@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
-import DashboardCards, { defaultStats } from "@/components/dashboard-cards";
+import { useState, useEffect, useCallback, useMemo } from "react";
+import DashboardCards from "@/components/dashboard-cards";
 import AlertsTable, { Alert } from "@/components/alerts-table";
 import FallDetectDevices, {
   type FallDetectDevice,
@@ -9,13 +9,23 @@ import FallDetectDevices, {
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import AlertDetailSidebar from "@/components/alert-detail/alert-detail-sidebar";
 import { useSocket } from "@/lib/use-socket";
+import { BellIcon, AlertTriangleIcon, CheckIcon } from "lucide-react";
 
 interface HomeClientProps {
   devices: FallDetectDevice[];
   alerts: Alert[];
+  stats?: {
+    total: number;
+    unhandled: number;
+    resolved: number;
+  };
 }
 
-export default function HomeClient({ devices, alerts: initialAlerts }: HomeClientProps) {
+export default function HomeClient({
+  devices,
+  alerts: initialAlerts,
+  stats: initialStats,
+}: HomeClientProps) {
   const [selectedAlertId, setSelectedAlertId] = useState<string | null>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [alerts, setAlerts] = useState<Alert[]>(initialAlerts);
@@ -24,6 +34,39 @@ export default function HomeClient({ devices, alerts: initialAlerts }: HomeClien
   useEffect(() => {
     setAlerts(initialAlerts);
   }, [initialAlerts]);
+
+  // 根據當前 alerts 動態計算統計數據
+  const stats = useMemo(() => {
+    const total = alerts.length;
+    const unhandled = alerts.filter((alert) => alert.status === "unhandled")
+      .length;
+    const resolved = alerts.filter((alert) => alert.status === "resolved")
+      .length;
+
+    return [
+      {
+        id: "total",
+        title: "Total Alerts",
+        value: total,
+        icon: <BellIcon className="h-4 w-4" />,
+        variant: "default" as const,
+      },
+      {
+        id: "unhandled",
+        title: "Unhandled",
+        value: unhandled,
+        icon: <AlertTriangleIcon className="h-4 w-4" />,
+        variant: "warning" as const,
+      },
+      {
+        id: "resolved",
+        title: "Resolved",
+        value: resolved,
+        icon: <CheckIcon className="h-4 w-4" />,
+        variant: "default" as const,
+      },
+    ];
+  }, [alerts]);
 
   // 處理新的 alert
   const handleNewAlert = useCallback((newAlert: Alert) => {
@@ -62,7 +105,7 @@ export default function HomeClient({ devices, alerts: initialAlerts }: HomeClien
     <>
       {/* Overview Section */}
       <section className="pt-4 sm:pt-6">
-        <DashboardCards stats={defaultStats} />
+        <DashboardCards stats={stats} />
       </section>
 
       {/* Alerts and Devices Tabs Section */}

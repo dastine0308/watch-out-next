@@ -12,6 +12,10 @@ services:
       - PORT=3000
       - HOSTNAME=0.0.0.0
       - NEXT_PUBLIC_SOCKET_URL=${NEXT_PUBLIC_SOCKET_URL:-*}
+      # If you need to disable TLS certificate verification (e.g., for self-signed certificates),
+      # uncomment the line below. WARNING: This is insecure and should only be used in development
+      # or when connecting to internal services with self-signed certificates.
+      # - NODE_TLS_REJECT_UNAUTHORIZED=0
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3000"]

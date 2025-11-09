@@ -4,7 +4,6 @@ import React from "react";
 import { Card, CardHeader, CardContent, CardTitle } from "@/components/ui/card";
 import { AlertTriangleIcon, BellIcon, CheckIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Alert } from "@/components/alerts-table";
 
 type Stat = {
   id: string;
