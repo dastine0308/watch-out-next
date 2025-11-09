@@ -34,11 +34,11 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json();
     const alert: Alert = {
-      id: body.id || `alert-${Date.now()}`,
-      title: body.title || "New Alert",
-      status: body.status || "unhandled",
-      description: body.description || "",
-      timeAgo: body.timeAgo || "just now",
+      id: body.id || body.alert_id || `alert-${Date.now()}`,
+      device_id: body.device_id || "",
+      alert_name: body.alert_name || body.title || "New Alert",
+      status: (body.status || "unhandled") as "unhandled" | "resolved",
+      time: body.time || body.created_at || new Date().toISOString(),
       location: body.location || "",
     };
 
