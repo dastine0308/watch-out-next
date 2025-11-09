@@ -15,7 +15,6 @@ import { useUserStore } from "@/store/user-store";
 export function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const setUser = useUserStore((state) => state.setUser);
   const [formData, setFormData] = useState<LoginFormData>({
     email: "",
     password: "",
@@ -43,7 +42,6 @@ export function LoginForm() {
       });
 
       const data = await response.json();
-      console.log(data);
 
       if (data?.error) {
         setErrors({ general: data.error });
@@ -55,16 +53,23 @@ export function LoginForm() {
         localStorage.setItem("token", data.token);
       }
 
-      // save user data (excluding token) to zustand store
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { token, ...userData } = data;
-      if (Object.keys(userData).length > 0) {
-        setUser(userData);
-      }
 
-      // check if there is a redirect parameter, if so, redirect to that page, otherwise redirect to home page
-      const redirect = searchParams.get("redirect");
-      router.push(redirect || "/");
+      const userId = userData?.user_id || "";
+      const userInfoResponse = await fetch(`/api/user/get/${userId}`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      const userInfoData = await userInfoResponse.json();
+      const { _id, phone, ...userInfo } = userInfoData;
+      useUserStore
+        .getState()
+        .setUser({ ...userInfo, id: _id || "", phoneNumber: phone || "" });
+
+      router.push("/");
     } catch (error) {
       if (error instanceof ZodError) {
         const fieldErrors: {
@@ -72,15 +77,6 @@ export function LoginForm() {
           password?: string;
           general?: string;
         } = {};
-
-        error.issues.forEach((issue) => {
-          const path = issue.path[0] as string;
-          if (path === "email" || path === "password") {
-            fieldErrors[path] = issue.message;
-          } else {
-            fieldErrors.general = issue.message;
-          }
-        });
 
         setErrors(fieldErrors);
       }

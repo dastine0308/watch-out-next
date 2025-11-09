@@ -70,23 +70,26 @@ export default function SettingsPage() {
     setIsLoading(true);
 
     try {
-      // Validate phone number using zod
       phoneNumberSchema.parse(phoneNumber);
 
-      // TODO: Replace with actual API call
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 500));
-
-      // Update user data in zustand store
-      setUser({
-        ...user,
-        phoneNumber,
+      const response = await fetch(`/api/user/update/${user?.id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: JSON.stringify({ phone: phoneNumber }),
       });
 
+      if (response.status !== 200) {
+        const data = await response.json();
+        setError(
+          data.error || "Failed to update phone number. Please try again.",
+        );
+        return;
+      }
+      useUserStore.getState().setUser({ ...user, phoneNumber });
       setSuccess(true);
-      setTimeout(() => {
-        setSuccess(false);
-      }, 3000);
     } catch (err) {
       if (err instanceof ZodError) {
         const fieldErrors: { phoneNumber?: string } = {};

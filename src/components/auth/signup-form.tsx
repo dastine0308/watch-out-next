@@ -43,7 +43,7 @@ export function SignupForm() {
         },
         body: JSON.stringify({
           email: validatedData.email,
-          phoneNumber: validatedData.phoneNumber,
+          phone: validatedData.phoneNumber,
           password: validatedData.password,
         }),
       });
